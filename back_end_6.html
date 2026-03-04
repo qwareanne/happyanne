@@ -230,21 +230,107 @@
             width: 120px;
             color: #800000;
         }
+
+        /* ===== 密碼驗證彈跳視窗 ===== */
+        #pwdOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #333333;
+            /* 深色背景 */
+            z-index: 9999;
+            /* 保持在最上層 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pwd-modal {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+        }
+
+        .pwd-modal h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .pwd-modal input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .pwd-modal button {
+            background-color: #e91e63;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        .pwd-modal button:hover {
+            background-color: #d81b60;
+        }
+
+        /* 避免在解鎖前滾動 */
+        body.locked {
+            overflow: hidden;
+        }
     </style>
 </head>
 
-<body>
+<body class="locked">
+
+    <!-- 密碼驗證區塊 -->
+    <div id="pwdOverlay">
+        <div class="pwd-modal">
+            <h3>請輸入密碼以進入網頁</h3>
+            <input type="password" id="pwdInput" placeholder="請輸入密碼" onkeypress="handlePwdKey(event)">
+            <button onclick="checkPassword()">確認</button>
+            <p id="pwdError" style="color: red; display: none; margin-top: 10px; font-size: 13px;">密碼錯誤，請重新輸入</p>
+        </div>
+    </div>
+
     <script>
-        (function () {
-            var password = prompt("請輸入密碼以進入網頁：");
-            if (password !== "qware") {
-                alert("密碼錯誤，您無權瀏覽此網頁。");
-                // 清空畫面內容
-                document.documentElement.innerHTML = "";
-                // 可導向至空網頁或其他地方
-                window.location.href = "about:blank";
+        function checkPassword() {
+            var pwd = document.getElementById("pwdInput").value;
+            if (pwd === "qware") {
+                // 密碼正確，隱藏驗證區塊並允許滾動
+                document.getElementById("pwdOverlay").style.display = "none";
+                document.body.classList.remove("locked");
+            } else {
+                // 密碼錯誤
+                document.getElementById("pwdError").style.display = "block";
+                document.getElementById("pwdInput").value = "";
+                document.getElementById("pwdInput").focus();
             }
-        })();
+        }
+
+        function handlePwdKey(event) {
+            if (event.key === "Enter") {
+                checkPassword();
+            }
+        }
+
+        // 頁面載入時聚焦輸入框
+        window.onload = function () {
+            document.getElementById("pwdInput").focus();
+        };
     </script>
 
     <!-- 左側選單 -->
