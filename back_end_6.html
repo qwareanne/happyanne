@@ -338,7 +338,7 @@
                 <div class="form-row">
                     <span class="label">關鍵字查詢：</span>
                     <input type="text" id="activityKeyword" style="width: 237px;" maxlength="10">
-                    <p style="color: rgb(255, 0, 0);"> 限10個英文字母</p>
+                    <p style="color: rgb(255, 0, 0);"> 請輸入關鍵字(限10字)</p>
                 </div>
                 <div class="form-row">
                     <span class="label">可退票日期：</span>
@@ -351,7 +351,7 @@
 
             <div class="section">
                 <div class="section-title">查詢結果</div>
-                <table>
+                <table id="activityTable">
                     <tr>
                         <th style="width: 156px">系統別</th>
                         <th style="width: 1194px">活動名稱</th>
@@ -1822,21 +1822,32 @@
             /* ===== 驗證邏輯: 退票活動查詢 ===== */
             function validateActivitySearch() {
                 // 取得欄位
-                var keyword = document.getElementById("activityKeyword").value.trim();
-
-                // 檢查是否只包含英文字母
-                var isEnglishOnly = /^[A-Za-z]*$/;
-                if (!isEnglishOnly.test(keyword)) {
-                    alert("限輸入英文字");
-                    return;
-                }
+                var keyword = document.getElementById("activityKeyword").value.trim().toLowerCase();
 
                 // 檢查長度 (限10個字)
                 if (keyword.length > 10) {
                     alert("關鍵字不能超過10個字");
-                } else {
-                    alert("搜尋中...");
-                    // 實際送出表單的程式碼可寫在這裡
+                    return;
+                }
+
+                // 實際過濾表格內容
+                var table = document.getElementById("activityTable");
+                if (table) {
+                    var rows = table.getElementsByTagName("tr");
+                    // idx 0 是標題行
+                    for (var i = 1; i < rows.length; i++) {
+                        var row = rows[i];
+                        // 針對第二欄 (活動名稱) 做搜尋，如果想要全部欄位都可以搜，可以把整行的 innerText 拿來比對
+                        var eventNameCell = row.getElementsByTagName("td")[1];
+                        if (eventNameCell) {
+                            var eventName = eventNameCell.innerText.toLowerCase();
+                            if (eventName.indexOf(keyword) > -1) {
+                                row.style.display = ""; // 包含關鍵字，顯示
+                            } else {
+                                row.style.display = "none"; // 不包含，隱藏
+                            }
+                        }
+                    }
                 }
             }
         </script>
