@@ -234,6 +234,18 @@
 </head>
 
 <body>
+    <script>
+        (function () {
+            var password = prompt("請輸入密碼以進入網頁：");
+            if (password !== "qware") {
+                alert("密碼錯誤，您無權瀏覽此網頁。");
+                // 清空畫面內容
+                document.documentElement.innerHTML = "";
+                // 可導向至空網頁或其他地方
+                window.location.href = "about:blank";
+            }
+        })();
+    </script>
 
     <!-- 左側選單 -->
     <div class="sidebar">
