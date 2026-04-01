@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活動垂直清單系統</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --border-color: #a0a0a0;
+            --header-bg: #8fbc8b; /* 星期列背景色 (像圖片中的漸層綠) */
+            --header-text: #000;
+            --day-bg: #c1d6ef; /* 日期數字列背景色 (像圖片中的淺藍色) */
+            --weekend-color: #d93838;
+            --cell-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: '微軟正黑體', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* 頂部導覽控制 */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .calendar-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 8px 16px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .btn-primary {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #357abd;
+        }
+
+        .btn-secondary {
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            margin-right: 10px;
+        }
+        .btn-secondary:hover {
+            background-color: #d68910;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #d93838; /* 確保跟圖片中「2026年1月」的顏色相近 */
+            font-weight: bold;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        /* 日曆網格容器 (模擬 Excel 的 Table 結構) */
+        /* 垂直列表容器 */
+        .timeline-container {
+            width: 100%;
+            height: 80vh; /* 固定高度，讓內部可以捲動 */
+            overflow-y: auto;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .timeline-row {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+            min-height: 80px;
+        }
+        .timeline-row:last-child {
+            border-bottom: none;
+        }
+        .timeline-row:hover {
+            background-color: #fbfcff;
+        }
+
+        .timeline-date-col {
+            width: 100px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid #ccc;
+            padding: 15px 10px;
+            background-color: var(--day-bg);
+        }
+
+        .timeline-date-col.is-weekend {
+            background-color: #fde8e8;
+            color: var(--weekend-color);
+        }
+
+        .timeline-date-num {
+            font-size: 32px;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        .timeline-day-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        /* 活動內容區塊 */
+        .day-events {
+            padding: 15px 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* 放大每一條活動的字體，讓排版更舒服 */
+        .event-item {
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 15px;
+            line-height: 1.5;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08); /* 讓每一條變成卡片狀 */
+        }
+        .event-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        /* 凸顯時間顯示 */
+        .event-time {
+            font-weight: bold;
+            color: #d35400; /* 深橘色，顯眼但不刺眼 */
+            margin-right: 5px;
+            font-family: inherit;
+        }
+
+        /* 系統強調整體視覺 */
+        .sys-tag {
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #fff;
+            margin-right: 4px;
+        }
+
+        /* 系統別顏色設定 */
+        .sys-a { background-color: #d8f3dc; border-left: 4px solid #52b788; color: #333; }
+        .sys-a .sys-tag { background-color: #52b788; }
+        
+        .sys-e { background-color: #fcefb4; border-left: 4px solid #f9c74f; color: #333; }
+        .sys-e .sys-tag { background-color: #f9c74f; color: #333; }
+        
+        .sys-q { background-color: #e0eaf5; border-left: 4px solid #4a90e2; color: #333; }
+        .sys-q .sys-tag { background-color: #4a90e2; }
+        
+        .sys-default { background-color: #f1f2f6; border-left: 4px solid #a4b0be; color: #333; }
+        .sys-default .sys-tag { background-color: #a4b0be; }
+
+        /* 障礙事件樣式 */
+        .event-item.is-incident {
+            background-color: #ffeded;
+            border-left: 4px solid #e74c3c;
+            color: #c0392b;
+        }
+        .event-item.is-incident .sys-tag {
+            background-color: #e74c3c;
+        }
+
+        /* 上版/服務導入樣式 */
+        .event-item.is-deploy {
+            background-color: #f5eefa;
+            border-left: 4px solid #9b59b6;
+            color: #8e44ad;
+        }
+        .event-item.is-deploy .sys-tag {
+            background-color: #9b59b6;
+        }
+
+        /* GA資料追蹤樣式 */
+        .event-item.is-ga {
+            background-color: #e3f2fd;
+            border-left: 4px solid #1976d2;
+            color: #1565c0;
+        }
+        .event-item.is-ga .sys-tag {
+            background-color: #1976d2;
+        }
+
+        /* 建檔表單 Modal */
+        #form-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(3px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            margin-right: auto; /* Push destructive action to the left */
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        /* 隱藏/顯示 */
+        .hidden { display: none !important; }
+        .flex { display: flex !important; }
+
+        /* 歷史活動列表樣式 */
+        .history-year-group {
+            margin-bottom: 20px;
+        }
+        .history-year-title {
+            font-size: 18px;
+            color: #d93838;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .history-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-left: 4px solid #4a90e2;
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+        .history-date {
+            font-weight: bold;
+            color: #555;
+            margin-right: 10px;
+        }
+        #history-list-content {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 控制列 -->
+    <div class="controls">
+        <div class="calendar-controls">
+            <button id="prevBtn">◀ 上個月</button>
+            <h2 id="monthYearDisplay">2026年1月</h2>
+            <button id="nextBtn">下個月 ▶</button>
+            <button id="todayBtn">今天</button>
+        </div>
+        <div>
+            <input type="text" id="searchInput" placeholder="關鍵字搜尋..." style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px; width: 120px;">
+            <button class="btn-secondary" id="searchBtn" style="background-color: #6c5ce7; margin-right: 15px;">搜尋</button>
+            <button class="btn-secondary" id="openHistoryBtn" style="margin-right: 15px;">歷年同月</button>
+            <button class="btn-primary" id="openGaFormBtn" style="background-color: #1976d2; margin-right: 10px;">+ GA售票數據</button>
+            <button class="btn-primary" id="openDeployFormBtn" style="background-color: #9b59b6; margin-right: 10px;">+ 上版/服務導入</button>
+            <button class="btn-primary" id="openIncidentFormBtn" style="background-color: #e74c3c; margin-right: 10px;">+ 障礙事件</button>
+            <button class="btn-primary" id="openFormBtn">+ 新增活動</button>
+        </div>
+    </div>
+
+    <!-- 萬年曆垂直列表區塊 -->
+    <div class="timeline-container" id="calendarGrid">
+        <!-- JavaScript 會在這裡插入垂直的日期與活動 -->
+    </div>
+
+    <!-- 新增活動表單 (Modal) -->
+    <div id="form-modal">
+        <div class="modal-content">
+            <h3>建立每日銷售活動</h3>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label>日期 *</label>
+                    <input type="date" id="eventDate" required>
+                </div>
+                <div class="form-group">
+                    <label>時間 (24小時制) *</label>
+                    <input type="text" id="eventTime" placeholder="例如: 08:30 或 14:00" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" title="請輸入 HH:MM 格式，例如 14:30" required>
+                </div>
+                <div class="form-group">
+                    <label>系統別 *</label>
+                    <input type="text" id="eventSystem" placeholder="例如: A系統, E系統, Q系統..." required list="systemsList">
+                    <datalist id="systemsList">
+                        <option value="A系統">
+                        <option value="E系統">
+                        <option value="Q系統">
+                    </datalist>
+                </div>
+                <div class="form-group">
+                    <label>活動名稱 *</label>
+                    <input type="text" id="eventName" placeholder="例如: 第40屆金唱片頒獎典禮" required>
+                </div>
+                <div class="form-group">
+                    <label>備註</label>
+                    <input type="text" id="eventNotes" placeholder="例如: 19:00/中型/小型 或 視線不良區釋票">
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="deleteFormBtn" class="btn-danger hidden">刪除活動</button>
+                    <button type="button" id="closeFormBtn">取消</button>
+                    <button type="submit" class="btn-primary">儲存活動</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 障礙事件表單 (Modal) -->
+    <div id="incident-form-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 1000;">
+        <div class="modal-content">
+            <h3 style="color: #e74c3c; border-bottom-color: #f5b7b1;">建立障礙事件</h3>
+            <form id="incidentForm">
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>發生日期 *</label>
+                        <input type="date" id="incDate" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>發生時間 (24小時制)</label>
+                        <input type="text" id="incTime" placeholder="例如: 14:00" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" title="請輸入 HH:MM 格式，例如 14:30">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>系統別 *</label>
+                    <input type="text" id="incSystem" placeholder="例如: A系統, POS系統..." required list="systemsList">
+                </div>
+                <div class="form-group">
+                    <label>事件說明 *</label>
+                    <textarea id="incDesc" rows="3" placeholder="簡述發生的問題或障礙狀況" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>處理結果</label>
+                    <input type="text" id="incResult" placeholder="例如: 已於14:30修復">
+                </div>
+                <div class="form-group">
+                    <label>報告/附件連結文字</label>
+                    <input type="text" id="incFileLink" placeholder="例如貼上 Google Drive 檔案連結">
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="deleteIncidentBtn" class="btn-danger hidden">刪除障礙</button>
+                    <button type="button" id="closeIncidentFormBtn">取消</button>
+                    <button type="submit" class="btn-primary" style="background-color: #e74c3c;">儲存障礙</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 上版/服務導入表單 (Modal) -->
+    <div id="deploy-form-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 1000;">
+        <div class="modal-content">
+            <h3 style="color: #9b59b6; border-bottom-color: #e8daef;">建立上版/服務導入紀錄</h3>
+            <form id="deployForm">
+                <div class="form-group">
+                    <label>分類 *</label>
+                    <select id="depCategory" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="上版">上版</option>
+                        <option value="服務導入">服務導入</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>發生日期 *</label>
+                    <input type="date" id="depDate" required>
+                </div>
+                <div class="form-group">
+                    <label>系統別 *</label>
+                    <input type="text" id="depSystem" placeholder="例如: A系統, POS系統..." required list="systemsList">
+                </div>
+                <div class="form-group">
+                    <label>內容說明 *</label>
+                    <textarea id="depContent" rows="3" placeholder="簡要說明上版或導入內容" required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="deleteDeployBtn" class="btn-danger hidden">刪除紀錄</button>
+                    <button type="button" id="closeDeployFormBtn">取消</button>
+                    <button type="submit" class="btn-primary" style="background-color: #9b59b6;">儲存紀錄</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- GA售票數據追蹤表單 (Modal) -->
+    <div id="ga-form-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 1000;">
+        <div class="modal-content">
+            <h3 style="color: #1976d2; border-bottom-color: #bbdefb;">建立GA售票數據追蹤</h3>
+            <form id="gaForm">
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>日期 *</label>
+                        <input type="date" id="gaDate" required>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>銷售時間 (24小時制) *</label>
+                        <input type="text" id="gaTime" placeholder="例如: 14:00" pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$" title="請輸入 HH:MM 格式，例如 14:30" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>活動名稱 *</label>
+                    <input type="text" id="gaName" placeholder="例如: 斯巴達障礙賽台北場" required>
+                </div>
+                
+                <div style="display: flex; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 4px; border: 1px solid #eee; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 13px;">D系統GA (選填)</label>
+                        <input type="number" id="gaNumberD" placeholder="數字">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 13px;">A系統GA (選填)</label>
+                        <input type="number" id="gaNumberA" placeholder="數字">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 13px;">E系統GA (選填)</label>
+                        <input type="number" id="gaNumberE" placeholder="數字">
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="gaQueuing" style="width: auto; margin: 0;">
+                    <label for="gaQueuing" style="font-weight: bold; margin: 0; cursor: pointer;">是否啟用排隊機制</label>
+                </div>
+                
+                <div class="form-group" id="gaRateGroup" style="display: none;">
+                    <label>每分鐘放入人數</label>
+                    <input type="number" id="gaQueueRate" placeholder="例如: 500">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="deleteGaBtn" class="btn-danger hidden">刪除紀錄</button>
+                    <button type="button" id="closeGaFormBtn">取消</button>
+                    <button type="submit" class="btn-primary" style="background-color: #1976d2;">儲存數據</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 歷史同月活動 (Modal) -->
+    <div id="history-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 1000;">
+        <div class="modal-content" style="max-width: 1000px; width: 95%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
+                <h3 id="history-modal-title" style="margin: 0; border: none; padding: 0;">歷年同月紀錄</h3>
+                <button type="button" id="downloadHistoryBtn" class="btn-secondary" style="background-color: #27ae60; margin: 0;">下載表格 (CSV)</button>
+            </div>
+            <div id="history-list-content" style="max-height: 70vh; overflow-y: auto; padding-right: 15px;">
+                <!-- 歷史資料會插入這裡 -->
+            </div>
+            <div class="form-actions" style="margin-top: 20px;">
+                <button type="button" id="closeHistoryBtn" class="btn-primary">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 搜尋結果 (Modal) -->
+    <div id="search-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); justify-content: center; align-items: center; z-index: 1000;">
+        <div class="modal-content" style="max-width: 600px;">
+            <h3>搜尋結果: <span id="search-keyword-display" style="color: #4a90e2;"></span></h3>
+            <div id="search-list-content" style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                <!-- 搜尋資料會插入這裡 -->
+            </div>
+            <div class="form-actions" style="margin-top: 20px;">
+                <button type="button" id="closeSearchBtn" class="btn-primary">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化狀態
+        let currentDate = new Date();
+        // 將預設時間設定為當前真實電腦系統時間
+        // (之前為了展示圖片範例，強制設定在 2026-01-01，現在取消強制覆蓋)
+        // currentDate = new Date('2026-01-01'); 
+
+        let editingEventId = null; // 用來記錄當前是否正在編輯
+
+        const eventsKey = 'sales_events_db';
+
+        // 讀取 LocalStorage 資料
+        function loadEvents() {
+            const data = localStorage.getItem(eventsKey);
+            return data ? JSON.parse(data) : [];
+        }
+
+        // 儲存至 LocalStorage (整個覆蓋)
+        function saveAllEvents(events) {
+            localStorage.setItem(eventsKey, JSON.stringify(events));
+        }
+
+        // 新增或更新事件
+        function saveEvent(eventObj) {
+            const events = loadEvents();
+            if (editingEventId) {
+                // 更新
+                const idx = events.findIndex(e => e.id === editingEventId);
+                if (idx !== -1) {
+                    events[idx] = eventObj;
+                }
+            } else {
+                // 新增
+                events.push(eventObj);
+            }
+            saveAllEvents(events);
+        }
+
+        // 刪除事件
+        function deleteEvent(id) {
+            const events = loadEvents();
+            const newEvents = events.filter(e => e.id !== id);
+            saveAllEvents(newEvents);
+        }
+
+        // 繪製日曆
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = ''; // 清空重新繪製
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            // 更新標題
+            document.getElementById('monthYearDisplay').innerText = `${year}年${month + 1}月`;
+
+            const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            
+            // 計算這個月有幾天
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const allEvents = loadEvents();
+
+            // 繪製當月每一天 (垂直列表)
+            for (let day = 1; day <= daysInMonth; day++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'timeline-row';
+
+                // 左側日期區塊
+                const dateCol = document.createElement('div');
+                dateCol.className = 'timeline-date-col';
+                
+                const currentDayOfWeek = new Date(year, month, day).getDay();
+                if (currentDayOfWeek === 0 || currentDayOfWeek === 6) {
+                    dateCol.classList.add('is-weekend');
+                }
+                
+                dateCol.innerHTML = `
+                    <div class="timeline-date-num">${String(day).padStart(2, '0')}</div>
+                    <div class="timeline-day-name">${weekdays[currentDayOfWeek]}</div>
+                `;
+                rowDiv.appendChild(dateCol);
+
+                // 右側內容區塊
+                const eventsContainer = document.createElement('div');
+                eventsContainer.className = 'day-events';
+
+                // 尋找當天的事件
+                // 格式化日期字串 YYYY-MM-DD
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                let todayEvents = allEvents.filter(e => e.date === dateStr);
+                
+                // 將同一天的活動依照時間排序 (沒有時間的排在最後面)
+                todayEvents.sort((a, b) => {
+                    const timeA = a.time || '24:00'; 
+                    const timeB = b.time || '24:00';
+                    return timeA.localeCompare(timeB);
+                });
+
+                todayEvents.forEach(e => {
+                    const eventDiv = document.createElement('div');
+                    eventDiv.className = 'event-item';
+                    
+                    let displayString = '';
+                    
+                    // 獨立抽出時間標示
+                    const timeDisplay = e.time ? `<span class="event-time">[${e.time}]</span>` : '';
+
+                    if (e.type === 'incident') {
+                        // 障礙事件樣式
+                        eventDiv.classList.add('is-incident');
+                        
+                        displayString = `${timeDisplay}<span class="sys-tag">⚠ ${e.system}</span> : <strong>${e.description}</strong>`;
+                        let extras = [];
+                        if (e.result) extras.push(e.result);
+                        if (e.fileLink) extras.push(`<a href="${e.fileLink}" target="_blank" style="color:#c0392b; text-decoration:underline;">[報告]</a>`);
+                        
+                        if (extras.length > 0) {
+                            displayString += ` (${extras.map(x => x.startsWith('<') ? x : x).join(' | ')})`;
+                        }
+
+                        // 加入點擊編輯事件 (障礙)
+                        eventDiv.addEventListener('click', (ev) => {
+                            ev.stopPropagation(); 
+                            openIncidentFormForEdit(e);
+                        });
+
+                    } else if (e.type === 'deploy') {
+                        // 上版/服務導入樣式
+                        eventDiv.classList.add('is-deploy');
+                        
+                        displayString = `<span class="sys-tag">🚀 ${e.system}</span> : <strong>[${e.category}]</strong> ${e.content}`;
+
+                        // 加入點擊編輯事件 (上版/導入)
+                        eventDiv.addEventListener('click', (ev) => {
+                            ev.stopPropagation(); 
+                            openDeployFormForEdit(e);
+                        });
+
+                    } else if (e.type === 'ga') {
+                        // GA 追蹤樣式 (日曆僅顯示乾淨的時間和名稱)
+                        eventDiv.classList.add('is-ga');
+                        
+                        displayString = `${timeDisplay}<span class="sys-tag">📊 GA</span> : <strong>${e.name}</strong>`;
+
+                        // 加入點擊編輯事件 (GA)
+                        eventDiv.addEventListener('click', (ev) => {
+                            ev.stopPropagation(); 
+                            openGaFormForEdit(e);
+                        });
+
+                    } else {
+                        // 一般行銷活動樣式
+                        const sysName = e.system ? e.system.toUpperCase() : '';
+                        if (sysName.includes('A系統')) {
+                            eventDiv.classList.add('sys-a');
+                        } else if (sysName.includes('E系統')) {
+                            eventDiv.classList.add('sys-e');
+                        } else if (sysName.includes('Q系統')) {
+                            eventDiv.classList.add('sys-q');
+                        } else {
+                            eventDiv.classList.add('sys-default');
+                        }
+                        
+                        // 組合顯示文字，例如： [19:00] A系統 : 第40屆金唱片頒獎典禮 (備註)
+                        displayString = `${timeDisplay}<span class="sys-tag">${e.system}</span> : ${e.name}`;
+                        
+                        let extras = [];
+                        if (e.notes) extras.push(e.notes);
+                        
+                        if (extras.length > 0) {
+                            displayString += ` (${extras.join('/')})`;
+                        }
+
+                        // 加入點擊編輯事件 (活動)
+                        eventDiv.addEventListener('click', (ev) => {
+                            ev.stopPropagation(); 
+                            openFormForEdit(e);
+                        });
+                    }
+
+                    eventDiv.innerHTML = displayString;
+                    eventsContainer.appendChild(eventDiv);
+                });
+
+                rowDiv.appendChild(eventsContainer);
+                grid.appendChild(rowDiv);
+            }
+        }
+
+        // 綁定事件
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        document.getElementById('todayBtn').addEventListener('click', () => {
+            currentDate = new Date(); // 當前電腦時間
+            renderCalendar();
+        });
+
+        // 彈出表單視窗 (活動)
+        const formModal = document.getElementById('form-modal');
+        const deleteBtn = document.getElementById('deleteFormBtn');
+        
+        // 彈出表單視窗 (障礙)
+        const incidentFormModal = document.getElementById('incident-form-modal');
+        const deleteIncidentBtn = document.getElementById('deleteIncidentBtn');
+        
+        // 彈出表單視窗 (GA)
+        const gaFormModal = document.getElementById('ga-form-modal');
+        const deleteGaBtn = document.getElementById('deleteGaBtn');
+        const gaQueuingCheckbox = document.getElementById('gaQueuing');
+        const gaRateGroup = document.getElementById('gaRateGroup');
+        
+        // 排隊勾選框連動顯示
+        gaQueuingCheckbox.addEventListener('change', () => {
+            if (gaQueuingCheckbox.checked) {
+                gaRateGroup.style.display = 'block';
+            } else {
+                gaRateGroup.style.display = 'none';
+                document.getElementById('gaQueueRate').value = '';
+            }
+        });
+
+        // 開啟新增表單 (活動)
+        document.getElementById('openFormBtn').addEventListener('click', () => {
+            editingEventId = null;
+            document.getElementById('eventForm').reset();
+            document.querySelector('#form-modal h3').innerText = '建立每日銷售活動';
+            deleteBtn.classList.add('hidden');
+            formModal.style.display = 'flex';
+        });
+
+        // 開啟新增表單 (障礙)
+        document.getElementById('openIncidentFormBtn').addEventListener('click', () => {
+            editingEventId = null;
+            document.getElementById('incidentForm').reset();
+            document.querySelector('#incident-form-modal h3').innerText = '建立障礙事件';
+            deleteIncidentBtn.classList.add('hidden');
+            incidentFormModal.style.display = 'flex';
+        });
+
+        // 開啟新增表單 (上版/導入)
+        document.getElementById('openDeployFormBtn').addEventListener('click', () => {
+            editingEventId = null;
+            document.getElementById('deployForm').reset();
+            document.querySelector('#deploy-form-modal h3').innerText = '建立上版/服務導入紀錄';
+            document.getElementById('depCategory').value = '上版'; // 預設
+            deleteDeployBtn.classList.add('hidden');
+            deployFormModal.style.display = 'flex';
+        });
+
+        // 開啟新增表單 (GA)
+        document.getElementById('openGaFormBtn').addEventListener('click', () => {
+            editingEventId = null;
+            document.getElementById('gaForm').reset();
+            document.querySelector('#ga-form-modal h3').innerText = '建立GA售票數據追蹤';
+            gaRateGroup.style.display = 'none';
+            deleteGaBtn.classList.add('hidden');
+            gaFormModal.style.display = 'flex';
+        });
+
+        // 開啟編輯表單 (活動)
+        function openFormForEdit(eventObj) {
+            editingEventId = eventObj.id;
+            document.querySelector('#form-modal h3').innerText = '編輯銷售活動';
+            
+            document.getElementById('eventDate').value = eventObj.date;
+            document.getElementById('eventTime').value = eventObj.time || '';
+            document.getElementById('eventSystem').value = eventObj.system || '';
+            document.getElementById('eventName').value = eventObj.name || '';
+            document.getElementById('eventNotes').value = eventObj.notes || '';
+            
+            deleteBtn.classList.remove('hidden');
+            formModal.style.display = 'flex';
+        }
+
+        // 開啟編輯表單 (障礙)
+        function openIncidentFormForEdit(eventObj) {
+            editingEventId = eventObj.id;
+            document.querySelector('#incident-form-modal h3').innerText = '編輯障礙事件';
+            
+            document.getElementById('incDate').value = eventObj.date;
+            document.getElementById('incTime').value = eventObj.time || '';
+            document.getElementById('incSystem').value = eventObj.system || '';
+            document.getElementById('incDesc').value = eventObj.description || '';
+            document.getElementById('incResult').value = eventObj.result || '';
+            document.getElementById('incFileLink').value = eventObj.fileLink || '';
+            
+            deleteIncidentBtn.classList.remove('hidden');
+            incidentFormModal.style.display = 'flex';
+        }
+
+        // 開啟編輯表單 (上版)
+        function openDeployFormForEdit(eventObj) {
+            editingEventId = eventObj.id;
+            document.querySelector('#deploy-form-modal h3').innerText = '編輯上版/服務導入紀錄';
+            
+            document.getElementById('depCategory').value = eventObj.category || '上版';
+            document.getElementById('depDate').value = eventObj.date;
+            document.getElementById('depSystem').value = eventObj.system || '';
+            document.getElementById('depContent').value = eventObj.content || '';
+            
+            deleteDeployBtn.classList.remove('hidden');
+            deployFormModal.style.display = 'flex';
+        }
+
+        // 開啟編輯表單 (GA)
+        function openGaFormForEdit(eventObj) {
+            editingEventId = eventObj.id;
+            document.querySelector('#ga-form-modal h3').innerText = '編輯GA售票數據';
+            
+            document.getElementById('gaDate').value = eventObj.date;
+            document.getElementById('gaTime').value = eventObj.time || '';
+            document.getElementById('gaName').value = eventObj.name || '';
+            document.getElementById('gaNumberD').value = eventObj.ga_D || '';
+            document.getElementById('gaNumberA').value = eventObj.ga_A || '';
+            document.getElementById('gaNumberE').value = eventObj.ga_E || '';
+            
+            gaQueuingCheckbox.checked = eventObj.hasQueue;
+            if (eventObj.hasQueue) {
+                gaRateGroup.style.display = 'block';
+                document.getElementById('gaQueueRate').value = eventObj.queueRate || '';
+            } else {
+                gaRateGroup.style.display = 'none';
+                document.getElementById('gaQueueRate').value = '';
+            }
+            
+            deleteGaBtn.classList.remove('hidden');
+            gaFormModal.style.display = 'flex';
+        }
+
+        document.getElementById('closeFormBtn').addEventListener('click', () => {
+            formModal.style.display = 'none';
+        });
+        document.getElementById('closeIncidentFormBtn').addEventListener('click', () => {
+            incidentFormModal.style.display = 'none';
+        });
+        document.getElementById('closeDeployFormBtn').addEventListener('click', () => {
+            deployFormModal.style.display = 'none';
+        });
+        document.getElementById('closeGaFormBtn').addEventListener('click', () => {
+            gaFormModal.style.display = 'none';
+        });
+
+        // 刪除處理 (活動)
+        deleteBtn.addEventListener('click', () => {
+            if (editingEventId && confirm('確定要刪除這個活動嗎？')) {
+                deleteEvent(editingEventId);
+                formModal.style.display = 'none';
+                renderCalendar();
+            }
+        });
+
+        // 刪除處理 (障礙)
+        deleteIncidentBtn.addEventListener('click', () => {
+            if (editingEventId && confirm('確定要刪除這個障礙紀錄嗎？')) {
+                deleteEvent(editingEventId);
+                incidentFormModal.style.display = 'none';
+                renderCalendar();
+            }
+        });
+
+        // 刪除處理 (上版)
+        deleteDeployBtn.addEventListener('click', () => {
+            if (editingEventId && confirm('確定要刪除這筆紀錄嗎？')) {
+                deleteEvent(editingEventId);
+                deployFormModal.style.display = 'none';
+                renderCalendar();
+            }
+        });
+
+        // 刪除處理 (GA)
+        deleteGaBtn.addEventListener('click', () => {
+            if (editingEventId && confirm('確定要刪除這筆GA數據嗎？')) {
+                deleteEvent(editingEventId);
+                gaFormModal.style.display = 'none';
+                renderCalendar();
+            }
+        });
+
+        // 表單送出處理 (活動)
+        document.getElementById('eventForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const eventObj = {
+                id: editingEventId ? editingEventId : Date.now().toString(),
+                type: 'event',
+                date: document.getElementById('eventDate').value,
+                time: document.getElementById('eventTime').value,
+                system: document.getElementById('eventSystem').value,
+                name: document.getElementById('eventName').value,
+                notes: document.getElementById('eventNotes').value
+            };
+
+            saveEvent(eventObj);
+            
+            const eventDateStr = new Date(eventObj.date);
+            currentDate = new Date(eventDateStr.getFullYear(), eventDateStr.getMonth(), 1);
+
+            e.target.reset();
+            formModal.style.display = 'none';
+            renderCalendar();
+        });
+
+        // 表單送出處理 (障礙)
+        document.getElementById('incidentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const eventObj = {
+                id: editingEventId ? editingEventId : Date.now().toString(),
+                type: 'incident',
+                date: document.getElementById('incDate').value,
+                time: document.getElementById('incTime').value,
+                system: document.getElementById('incSystem').value,
+                description: document.getElementById('incDesc').value,
+                result: document.getElementById('incResult').value,
+                fileLink: document.getElementById('incFileLink').value
+            };
+
+            saveEvent(eventObj);
+            
+            const eventDateStr = new Date(eventObj.date);
+            currentDate = new Date(eventDateStr.getFullYear(), eventDateStr.getMonth(), 1);
+
+            e.target.reset();
+            incidentFormModal.style.display = 'none';
+            renderCalendar();
+        });
+
+        // 表單送出處理 (上版/導入)
+        document.getElementById('deployForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const eventObj = {
+                id: editingEventId ? editingEventId : Date.now().toString(),
+                type: 'deploy',
+                category: document.getElementById('depCategory').value,
+                date: document.getElementById('depDate').value,
+                system: document.getElementById('depSystem').value,
+                content: document.getElementById('depContent').value
+            };
+
+            saveEvent(eventObj);
+            
+            const eventDateStr = new Date(eventObj.date);
+            currentDate = new Date(eventDateStr.getFullYear(), eventDateStr.getMonth(), 1);
+
+            e.target.reset();
+            deployFormModal.style.display = 'none';
+            renderCalendar();
+        });
+
+        // 表單送出處理 (GA)
+        document.getElementById('gaForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const hasQueue = document.getElementById('gaQueuing').checked;
+
+            const eventObj = {
+                id: editingEventId ? editingEventId : Date.now().toString(),
+                type: 'ga',
+                date: document.getElementById('gaDate').value,
+                time: document.getElementById('gaTime').value,
+                name: document.getElementById('gaName').value,
+                ga_D: document.getElementById('gaNumberD').value,
+                ga_A: document.getElementById('gaNumberA').value,
+                ga_E: document.getElementById('gaNumberE').value,
+                hasQueue: hasQueue,
+                queueRate: hasQueue ? document.getElementById('gaQueueRate').value : ''
+            };
+
+            saveEvent(eventObj);
+            
+            const eventDateStr = new Date(eventObj.date);
+            currentDate = new Date(eventDateStr.getFullYear(), eventDateStr.getMonth(), 1);
+
+            e.target.reset();
+            gaFormModal.style.display = 'none';
+            renderCalendar();
+        });
+
+        // 供下載使用的暫存歷史資料
+        let currentHistoryEventsForDownload = [];
+
+        // 歷史紀錄 Modal 處理
+        const historyModal = document.getElementById('history-modal');
+        document.getElementById('openHistoryBtn').addEventListener('click', () => {
+            const currentMonth = currentDate.getMonth(); // 0-11
+            const currentYear = currentDate.getFullYear();
+            
+            document.getElementById('history-modal-title').innerText = `${currentMonth + 1}月份 - 歷年同月紀錄`;
+            
+            const allEvents = loadEvents();
+            // 過濾出同個月份的所有活動 (包含今年)
+            const historyEvents = allEvents.filter(e => {
+                const eDate = new Date(e.date);
+                return eDate.getMonth() === currentMonth; // 不再排除今年
+            });
+
+            const contentDiv = document.getElementById('history-list-content');
+            contentDiv.innerHTML = ''; // 清空
+            
+            // 存起來供下載 CSV 使用，並先照日期新到舊排序
+            currentHistoryEventsForDownload = [...historyEvents].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (historyEvents.length === 0) {
+                contentDiv.innerHTML = '<p style="color: #666; text-align: center;">此月無任何歷史紀錄。</p>';
+            } else {
+                // 將資料以年份分組
+                const groupedByYear = {};
+                historyEvents.forEach(e => {
+                    const eYear = new Date(e.date).getFullYear();
+                    if (!groupedByYear[eYear]) {
+                        groupedByYear[eYear] = [];
+                    }
+                    groupedByYear[eYear].push(e);
+                });
+
+                // 取出年份並由大到小排序 (越近期越上面)
+                const sortedYears = Object.keys(groupedByYear).sort((a, b) => b - a);
+
+                sortedYears.forEach(year => {
+                    const yearGroupDiv = document.createElement('div');
+                    yearGroupDiv.className = 'history-year-group';
+
+                    const yearTitle = document.createElement('div');
+                    yearTitle.className = 'history-year-title';
+                    yearTitle.innerText = `${year}年`;
+                    yearGroupDiv.appendChild(yearTitle);
+
+                    // 針對該年的活動依照日期排序 (由小到大)
+                    groupedByYear[year].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                    groupedByYear[year].forEach(e => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'history-item';
+                        
+                        // 格式化日期部分為 DD
+                        const day = String(new Date(e.date).getDate()).padStart(2, '0');
+
+                        if (e.type === 'incident') {
+                            itemDiv.style.borderLeftColor = '#e74c3c';
+                            itemDiv.style.backgroundColor = '#ffeded';
+                            let timePrefix = e.time ? `<span style="font-weight:bold; color:#d35400;">[${e.time}]</span> ` : '';
+                            let displayStr = `${timePrefix}<span class="sys-tag" style="background:#e74c3c;">⚠ ${e.system}</span> : <strong>${e.description}</strong>`;
+                            if (e.result) displayStr += ` (${e.result})`;
+                            
+                            itemDiv.innerHTML = `<span class="history-date">${currentMonth + 1}/${day}</span> ${displayStr}`;
+                        } else if (e.type === 'deploy') {
+                            itemDiv.style.borderLeftColor = '#9b59b6';
+                            itemDiv.style.backgroundColor = '#f5eefa';
+                            itemDiv.innerHTML = `
+                                <span class="history-date">${currentMonth + 1}/${day}</span>
+                                <span class="sys-tag" style="background:#9b59b6;">🚀 ${e.system}</span> : <strong>[${e.category}]</strong> ${e.content}
+                            `;
+                        } else if (e.type === 'ga') {
+                            itemDiv.style.borderLeftColor = '#1976d2';
+                            itemDiv.style.backgroundColor = '#e3f2fd';
+                            
+                            let gaDetails = [];
+                            if(e.ga_D) gaDetails.push(`D系GA: ${e.ga_D}`);
+                            if(e.ga_A) gaDetails.push(`A系GA: ${e.ga_A}`);
+                            if(e.ga_E) gaDetails.push(`E系GA: ${e.ga_E}`);
+                            
+                            let queueStr = e.hasQueue ? `[排隊放行: ${e.queueRate}/分]` : '[未排隊]';
+                            let timePrefix = e.time ? `<span style="font-weight:bold; color:#d35400;">[${e.time}]</span> ` : '';
+
+                            itemDiv.innerHTML = `
+                                <span class="history-date">${currentMonth + 1}/${day}</span>
+                                ${timePrefix}<span class="sys-tag" style="background:#1976d2;">📊 GA</span> : <strong>${e.name}</strong> 
+                                <span style="font-size:0.9em; margin-left: 8px;">(${gaDetails.join(', ')} | ${queueStr})</span>
+                            `;
+                        } else {
+                            // 判斷系統顏色 (活動)
+                            const sysName = e.system ? e.system.toUpperCase() : '';
+                            if (sysName.includes('A系統')) itemDiv.classList.add('sys-a');
+                            else if (sysName.includes('E系統')) itemDiv.classList.add('sys-e');
+                            else if (sysName.includes('Q系統')) itemDiv.classList.add('sys-q');
+                            else itemDiv.classList.add('sys-default');
+                            
+                            let extras = [];
+                            // if (e.time) extras.push(e.time); // Removed from extras since we show it up front
+                            if (e.notes) extras.push(e.notes);
+                            const extrasStr = extras.length > 0 ? ` (${extras.join('/')})` : '';
+                            let timePrefix = e.time ? `<span style="font-weight:bold; color:#d35400;">[${e.time}]</span> ` : '';
+
+                            itemDiv.innerHTML = `
+                                <span class="history-date">${currentMonth + 1}/${day}</span>
+                                ${timePrefix}<span class="sys-tag">${e.system}</span> : ${e.name} ${extrasStr}
+                            `;
+                        }
+
+                        yearGroupDiv.appendChild(itemDiv);
+                    });
+
+                    contentDiv.appendChild(yearGroupDiv);
+                });
+            }
+
+            historyModal.style.display = 'flex';
+        });
+
+        document.getElementById('closeHistoryBtn').addEventListener('click', () => {
+            historyModal.style.display = 'none';
+        });
+
+        // 下載 CSV 功能
+        document.getElementById('downloadHistoryBtn').addEventListener('click', () => {
+            if (currentHistoryEventsForDownload.length === 0) {
+                alert('沒有資料可供下載喔！');
+                return;
+            }
+
+            // CSV 標頭
+            let csvContent = "\uFEFF"; // 加上 BOM，讓 Excel 讀懂 UTF-8，避免中文亂碼
+            csvContent += "分類,發生日期,時間,系統別,名稱/說明,備註/處理結果,連結\n";
+
+            currentHistoryEventsForDownload.forEach(e => {
+                // 將欄位如果有逗號的加上雙引號，避免破壞 CSV 格式
+                const escapeCsv = (str) => {
+                    if (!str) return '';
+                    let cleanStr = String(str).replace(/"/g, '""'); // 雙引號轉譯
+                    return `"${cleanStr}"`;
+                };
+
+                let typeStr = '行銷活動';
+                let nameDescStr = e.name || '';
+                let notesResStr = e.notes || '';
+                let systemStr = e.system || '';
+                
+                if (e.type === 'incident') {
+                    typeStr = '障礙事件';
+                    nameDescStr = e.description || '';
+                    notesResStr = e.result || '';
+                } else if (e.type === 'deploy') {
+                    typeStr = e.category || '上版/服務導入';
+                    nameDescStr = e.content || '';
+                    notesResStr = '';
+                } else if (e.type === 'ga') {
+                    typeStr = 'GA大檔追蹤';
+                    systemStr = '多系統';
+                    // 將 GA 數字寫入名稱說明欄位
+                    let gaDetails = [];
+                    if(e.ga_D) gaDetails.push(`D:${e.ga_D}`);
+                    if(e.ga_A) gaDetails.push(`A:${e.ga_A}`);
+                    if(e.ga_E) gaDetails.push(`E:${e.ga_E}`);
+                    let queueStr = e.hasQueue ? `排隊放行: ${e.queueRate}/分` : '未排隊';
+                    
+                    nameDescStr = `${e.name}`;
+                    notesResStr = `${gaDetails.join(',')} | ${queueStr}`;
+                }
+
+                const dateStr = e.date || '';
+                const timeStr = e.time || '';
+                const linkStr = e.fileLink || '';
+
+                csvContent += `${escapeCsv(typeStr)},${escapeCsv(dateStr)},${escapeCsv(timeStr)},${escapeCsv(systemStr)},${escapeCsv(nameDescStr)},${escapeCsv(notesResStr)},${escapeCsv(linkStr)}\n`;
+            });
+
+            // 建立下載連結
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            
+            // 檔名加上當前瀏覽月份
+            const currentMonth = currentDate.getMonth() + 1;
+            link.setAttribute("download", `歷史同月紀錄_${currentMonth}月份.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // 搜尋處理
+        const searchModal = document.getElementById('search-modal');
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+            if (!keyword) {
+                alert('請輸入搜尋關鍵字！');
+                return;
+            }
+
+            document.getElementById('search-keyword-display').innerText = `"${keyword}"`;
+            
+            const allEvents = loadEvents();
+            let searchResults = allEvents.filter(e => {
+                const sysMatch = e.system && e.system.toLowerCase().includes(keyword);
+                const nameMatch = e.name && e.name.toLowerCase().includes(keyword);
+                
+                if (e.type === 'incident') {
+                    const descMatch = e.description && e.description.toLowerCase().includes(keyword);
+                    const resMatch = e.result && e.result.toLowerCase().includes(keyword);
+                    return sysMatch || descMatch || resMatch;
+                } else if (e.type === 'deploy') {
+                    const contentMatch = e.content && e.content.toLowerCase().includes(keyword);
+                    const catMatch = e.category && e.category.toLowerCase().includes(keyword);
+                    return sysMatch || contentMatch || catMatch;
+                } else if (e.type === 'ga') {
+                    return nameMatch;
+                } else {
+                    const notesMatch = e.notes && e.notes.toLowerCase().includes(keyword);
+                    return nameMatch || sysMatch || notesMatch;
+                }
+            });
+
+            // 依照日期由新到舊排序
+            searchResults.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const contentDiv = document.getElementById('search-list-content');
+            contentDiv.innerHTML = ''; // 清空
+
+            if (searchResults.length === 0) {
+                contentDiv.innerHTML = '<p style="color: #666; text-align: center;">找不到符合的活動紀錄。</p>';
+            } else {
+                searchResults.forEach(e => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'history-item';
+
+                    // 格式化日期 YYYY/MM/DD
+                    const d = new Date(e.date);
+                    const dateStr = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+                    const timePrefix = e.time ? `<span style="font-weight:bold; color:#d35400;">[${e.time}]</span> ` : '';
+                    
+                    if (e.type === 'incident') {
+                        itemDiv.style.borderLeftColor = '#e74c3c';
+                        itemDiv.style.backgroundColor = '#ffeded';
+                        let displayStr = `${timePrefix}<span class="sys-tag" style="background:#e74c3c;">⚠ ${e.system}</span> : <strong>${e.description}</strong>`;
+                        if (e.result) displayStr += ` (${e.result})`;
+                        
+                        itemDiv.innerHTML = `<span class="history-date">${dateStr}</span> ${displayStr}`;
+                    } else if (e.type === 'deploy') {
+                        itemDiv.style.borderLeftColor = '#9b59b6';
+                        itemDiv.style.backgroundColor = '#f5eefa';
+                        itemDiv.innerHTML = `
+                            <span class="history-date">${dateStr}</span>
+                            <span class="sys-tag" style="background:#9b59b6;">🚀 ${e.system}</span> : <strong>[${e.category}]</strong> ${e.content}
+                        `;
+                    } else if (e.type === 'ga') {
+                        itemDiv.style.borderLeftColor = '#1976d2';
+                        itemDiv.style.backgroundColor = '#e3f2fd';
+                        let gaDetails = [];
+                        if(e.ga_D) gaDetails.push(`D系GA: ${e.ga_D}`);
+                        if(e.ga_A) gaDetails.push(`A系GA: ${e.ga_A}`);
+                        if(e.ga_E) gaDetails.push(`E系GA: ${e.ga_E}`);
+                        let queueStr = e.hasQueue ? `[排隊放行: ${e.queueRate}/分]` : '[未排隊]';
+
+                        itemDiv.innerHTML = `
+                            <span class="history-date">${dateStr}</span>
+                            <span class="sys-tag" style="background:#1976d2;">📊 GA</span> : <strong>[${e.time}] ${e.name}</strong> 
+                            <span style="font-size:0.9em; margin-left: 8px;">(${gaDetails.join(', ')} | ${queueStr})</span>
+                        `;
+                    } else {
+                        // 判斷系統顏色
+                        const sysName = e.system ? e.system.toUpperCase() : '';
+                        if (sysName.includes('A系統')) itemDiv.classList.add('sys-a');
+                        else if (sysName.includes('E系統')) itemDiv.classList.add('sys-e');
+                        else if (sysName.includes('Q系統')) itemDiv.classList.add('sys-q');
+                        else itemDiv.classList.add('sys-default');
+
+                        let extras = [];
+                        if (e.time) extras.push(e.time);
+                        if (e.notes) extras.push(e.notes);
+                        const extrasStr = extras.length > 0 ? ` (${extras.join('/')})` : '';
+
+                        itemDiv.innerHTML = `
+                            <span class="history-date">${dateStr}</span>
+                            <span class="sys-tag">${e.system}</span> : ${e.name} ${extrasStr}
+                        `;
+                    }
+                    
+                    contentDiv.appendChild(itemDiv);
+                });
+            }
+
+            searchModal.style.display = 'flex';
+        });
+        
+        // 允許按 Enter 搜尋
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                document.getElementById('searchBtn').click();
+            }
+        });
+
+        document.getElementById('closeSearchBtn').addEventListener('click', () => {
+            searchModal.style.display = 'none';
+        });
+
+        // 初始化第一次渲染
+        // 我們手動加入一些範例資料讓他看起來像圖片
+        function initSampleData() {
+            if (loadEvents().length === 0) {
+                const samples = [
+                    // 當前顯示年分 (2026年1月)
+                    { id: '1', date: '2026-01-07', system: 'A系統', name: '第40屆金唱片頒獎典禮 The 40th Golden Disc Awards', time: '19:00', notes: '視線不良區釋票/中型/小型' },
+                    { id: '2', date: '2026-01-14', system: 'Q系統', name: '台鐵2026春節預售-西部幹線', time: '00:00', notes: '中型/中型' },
+                    { id: '3', date: '2026-01-16', system: 'Q系統', name: '高鐵2026春節預售', time: '00:00', notes: '中型/中型' },
+                    { id: '4', date: '2026-01-19', system: 'E系統', name: '026斯巴達障礙跑競賽台南場：Kids 小勇士賽', time: '12:00', notes: '大型免監' },
+                    // 歷史年份範例資料 (2025年1月, 2024年1月) - 讓人可以點歷史按鈕有東西看
+                    { id: '5', type: 'event', date: '2025-01-08', system: 'A系統', name: '第39屆金唱片頒獎典禮', time: '18:30', notes: '中型' },
+                    { id: '6', type: 'event', date: '2025-01-20', system: 'Q系統', name: '台鐵2025春節預售-東部幹線', time: '00:00', notes: '大型' },
+                    { id: '7', type: 'event', date: '2024-01-15', system: 'E系統', name: '2024斯巴達障礙賽台北場', time: '10:00', notes: '大型' },
+                    
+                    // 範例障礙事件
+                    { id: '8', type: 'incident', date: '2026-01-14', time: '00:05', system: 'Q系統', description: '台鐵預售瞬間湧入異常斷線', result: '於00:15修正並重啟主機', fileLink: 'https://google.com' },
+                    { id: '9', type: 'incident', date: '2025-01-20', time: '13:30', system: 'Q系統', description: '資料庫死鎖導致購票緩慢', result: '工程師手動清檔後恢復正常', fileLink: '' },
+                    
+                    // 範例上版/服務導入
+                    { id: '10', type: 'deploy', date: '2026-01-05', category: '上版', system: 'E系統', content: '更新報表模組 v1.2.3' },
+                    { id: '11', type: 'deploy', date: '2026-01-25', category: '服務導入', system: 'A系統', content: 'Apple Pay 金流功能上線啟用' },
+                    
+                    // 範例GA數據
+                    { id: '12', type: 'ga', date: '2026-01-16', time: '00:00', name: '高鐵2026春節預售大檔', ga_D: '120000', ga_A: '', ga_E: '50000', hasQueue: true, queueRate: '800' }
+                ];
+                samples.forEach(s => saveEvent(s));
+            }
+        }
+
+        initSampleData();
+        renderCalendar();
+
+    </script>
+</body>
+</html>
