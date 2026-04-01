@@ -383,10 +383,38 @@ function init(){
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('orderDate').value = today;
   updateDayOfWeek();
+  
+  if (APPS_SCRIPT_URL) {
+    updateSyncStatus('syncing', '正在載入雲端資料...');
+    fetch(APPS_SCRIPT_URL + "?action=get")
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.orders) {
+          orders = data.orders;
+          nextId = orders.length ? Math.max(...orders.map(o=>o.id))+1 : 1;
+          saveData();
+          renderOrders();renderStats();
+          updateSyncStatus('synced', '已同步最新資料');
+        } else {
+          loadLocalData();
+        }
+      })
+      .catch(err => {
+        console.error('Fetch error:', err);
+        updateSyncStatus('error', '讀取失敗，使用本機資料');
+        loadLocalData();
+      });
+  } else {
+    loadLocalData();
+  }
+  renderMenus();
+}
+
+function loadLocalData(){
   const saved = localStorage.getItem(STORAGE_KEY+'orders');
   if(saved){orders=JSON.parse(saved);nextId=orders.length?Math.max(...orders.map(o=>o.id))+1:1}
   else{loadSampleData()}
-  renderOrders();renderMenus();renderStats();
+  renderOrders();renderStats();
 }
 
 function loadSampleData(){
