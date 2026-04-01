@@ -9,39 +9,39 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
---bg:#0f0f1a;--surface:#1a1a2e;--surface2:#16213e;--surface3:#1c2541;
---accent:#7c3aed;--accent2:#8b5cf6;--accent3:#ec4899;
---green:#10b981;--red:#ef4444;--yellow:#f59e0b;--cyan:#06b6d4;
---text:#f1f5f9;--text2:#94a3b8;--text3:#64748b;
---border:rgba(139,92,246,.2);--glass:rgba(26,26,46,.85);
---radius:14px;--shadow:0 8px 32px rgba(0,0,0,.3);
+--bg:#fff0f3;--surface:#ffffff;--surface2:#ffffff;--surface3:#fce4ec;
+--accent:#d63384;--accent2:#c2185b;--accent3:#e91e63;
+--green:#2e7d32;--red:#c62828;--yellow:#f9a825;--cyan:#00838f;
+--text:#2d2d2d;--text2:#555555;--text3:#999999;
+--border:rgba(214,51,132,.15);--glass:rgba(255,240,243,.92);
+--radius:14px;--shadow:0 8px 32px rgba(214,51,132,.08);
 }
 body{font-family:'Noto Sans TC','Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 body::before{content:'';position:fixed;inset:0;background:
-  radial-gradient(ellipse at 15% 15%,rgba(124,58,237,.12),transparent 50%),
-  radial-gradient(ellipse at 85% 85%,rgba(236,72,153,.08),transparent 50%),
-  radial-gradient(ellipse at 50% 50%,rgba(6,182,212,.05),transparent 60%);
+  radial-gradient(ellipse at 15% 15%,rgba(233,30,99,.06),transparent 50%),
+  radial-gradient(ellipse at 85% 85%,rgba(214,51,132,.05),transparent 50%),
+  radial-gradient(ellipse at 50% 50%,rgba(244,143,177,.04),transparent 60%);
   pointer-events:none;z-index:0}
 
 /* Animated bg orbs */
 .orb{position:fixed;border-radius:50%;filter:blur(80px);opacity:.15;pointer-events:none;z-index:0;animation:orbFloat 20s ease-in-out infinite}
-.orb-1{width:400px;height:400px;background:#7c3aed;top:-100px;left:-100px}
-.orb-2{width:350px;height:350px;background:#ec4899;bottom:-80px;right:-80px;animation-delay:-7s}
-.orb-3{width:300px;height:300px;background:#06b6d4;top:50%;left:50%;animation-delay:-14s}
+.orb-1{width:400px;height:400px;background:#f48fb1;top:-100px;left:-100px}
+.orb-2{width:350px;height:350px;background:#f8bbd0;bottom:-80px;right:-80px;animation-delay:-7s}
+.orb-3{width:300px;height:300px;background:#fce4ec;top:50%;left:50%;animation-delay:-14s}
 @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(30px,-40px) scale(1.05)}66%{transform:translate(-20px,30px) scale(.95)}}
 
 /* Header */
 .header{position:sticky;top:0;z-index:100;backdrop-filter:blur(24px) saturate(1.4);background:var(--glass);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
-.header h1{font-size:22px;font-weight:700;background:linear-gradient(135deg,#a78bfa,#ec4899,#06b6d4);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradShift 4s ease infinite}
+.header h1{font-size:22px;font-weight:700;background:linear-gradient(135deg,#d63384,#e91e63,#c2185b);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradShift 4s ease infinite}
 @keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 .header-right{display:flex;gap:12px;align-items:center}
-.header .badge{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;box-shadow:0 2px 10px rgba(124,58,237,.3)}
+.header .badge{background:linear-gradient(135deg,var(--accent),var(--accent3));color:#fff;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;box-shadow:0 2px 10px rgba(214,51,132,.3)}
 
 /* Tab Bar */
 .tab-bar{display:flex;gap:4px;padding:16px 32px 0;position:relative;z-index:1}
 .tab{padding:10px 24px;border-radius:var(--radius) var(--radius) 0 0;background:var(--surface);color:var(--text3);cursor:pointer;font-size:14px;font-weight:500;border:1px solid transparent;border-bottom:none;transition:all .3s}
 .tab:hover{color:var(--text2);background:var(--surface2)}
-.tab.active{background:var(--surface2);color:var(--accent2);border-color:var(--border);box-shadow:0 -4px 12px rgba(124,58,237,.1)}
+.tab.active{background:var(--surface2);color:var(--accent2);border-color:var(--border);box-shadow:0 -4px 12px rgba(214,51,132,.1)}
 
 /* Main */
 .main{padding:0 32px 32px;position:relative;z-index:1}
@@ -52,7 +52,7 @@ body::before{content:'';position:fixed;inset:0;background:
 /* Toolbar */
 .toolbar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
 .search-box{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0 14px;flex:1;min-width:200px;max-width:400px;transition:all .3s}
-.search-box:focus-within{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(139,92,246,.15)}
+.search-box:focus-within{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(214,51,132,.15)}
 .search-box input{background:none;border:none;color:var(--text);padding:10px 8px;width:100%;outline:none;font-size:14px}
 .search-box input::placeholder{color:var(--text3)}
 .search-box svg{width:18px;height:18px;color:var(--text3)}
@@ -64,32 +64,32 @@ select.filter-select option{background:var(--surface);color:var(--text)}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .25s;font-family:inherit;position:relative;overflow:hidden}
 .btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);opacity:0;transition:opacity .3s}
 .btn:hover::after{opacity:1}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#a855f7);color:#fff;box-shadow:0 4px 15px rgba(124,58,237,.35)}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.5)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#e91e63);color:#fff;box-shadow:0 4px 15px rgba(214,51,132,.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(214,51,132,.5)}
 .btn-success{background:linear-gradient(135deg,var(--green),#34d399);color:#fff}
 .btn-danger{background:linear-gradient(135deg,var(--red),#f87171);color:#fff}
 .btn-sm{padding:6px 14px;font-size:12px;border-radius:8px}
-.btn-ghost{background:rgba(255,255,255,.05);color:var(--text2);border:1px solid var(--border)}
-.btn-ghost:hover{background:rgba(139,92,246,.1);color:var(--text);border-color:var(--accent2)}
+.btn-ghost{background:rgba(255,255,255,.7);color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:rgba(214,51,132,.08);color:var(--text);border-color:var(--accent2)}
 
 /* Table */
 .table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
 table{width:100%;border-collapse:collapse;font-size:14px}
-thead{background:rgba(124,58,237,.08)}
+thead{background:rgba(214,51,132,.06)}
 th{padding:12px 16px;text-align:left;font-weight:600;color:var(--accent2);font-size:13px;white-space:nowrap;border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:.5px}
-td{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap}
+td{padding:10px 16px;border-bottom:1px solid rgba(0,0,0,.05);white-space:nowrap}
 tbody tr{transition:all .2s}
-tbody tr:hover{background:rgba(139,92,246,.06)}
+tbody tr:hover{background:rgba(214,51,132,.04)}
 .tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
-.tag-meal{background:rgba(139,92,246,.15);color:var(--accent2)}
-.tag-drink{background:rgba(6,182,212,.15);color:var(--cyan)}
-.tag-veg{background:rgba(16,185,129,.15);color:var(--green)}
+.tag-meal{background:rgba(214,51,132,.1);color:var(--accent2)}
+.tag-drink{background:rgba(0,131,143,.1);color:var(--cyan)}
+.tag-veg{background:rgba(46,125,50,.1);color:var(--green)}
 .action-group{display:flex;gap:6px}
 
 /* Stats */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;transition:transform .3s,box-shadow .3s}
-.stat-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.2)}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(214,51,132,.12)}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
 .stat-card:nth-child(1)::before{background:linear-gradient(90deg,var(--accent),var(--accent2))}
 .stat-card:nth-child(2)::before{background:linear-gradient(90deg,var(--green),var(--cyan))}
@@ -99,14 +99,14 @@ tbody tr:hover{background:rgba(139,92,246,.06)}
 .stat-value{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 
 /* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);z-index:200;align-items:center;justify-content:center}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.25);backdrop-filter:blur(8px);z-index:200;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
-.modal{background:var(--surface2);border:1px solid var(--border);border-radius:18px;width:90%;max-width:640px;max-height:85vh;overflow-y:auto;box-shadow:0 24px 48px rgba(0,0,0,.4);animation:modalIn .3s ease}
+.modal{background:var(--surface2);border:1px solid var(--border);border-radius:18px;width:90%;max-width:640px;max-height:85vh;overflow-y:auto;box-shadow:0 24px 48px rgba(214,51,132,.15);animation:modalIn .3s ease}
 @keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .modal-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border)}
 .modal-header h2{font-size:18px;font-weight:700;color:var(--accent2)}
 .modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:22px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all .2s}
-.modal-close:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.modal-close:hover{background:rgba(214,51,132,.08);color:var(--text)}
 .modal-body{padding:24px}
 
 /* Form */
@@ -115,13 +115,13 @@ tbody tr:hover{background:rgba(139,92,246,.06)}
 .form-group.full{grid-column:1/-1}
 .form-group label{font-size:13px;font-weight:600;color:var(--text2)}
 .form-group input,.form-group select,.form-group textarea{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:14px;outline:none;transition:all .3s;font-family:inherit}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(139,92,246,.12)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(214,51,132,.12)}
 .form-group textarea{resize:vertical;min-height:60px}
 .radio-group{display:flex;flex-wrap:wrap;gap:8px}
 .radio-card{position:relative}
 .radio-card input{display:none}
 .radio-card span{display:block;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:13px;transition:all .25s;color:var(--text2)}
-.radio-card input:checked+span{background:rgba(139,92,246,.15);border-color:var(--accent2);color:var(--accent2);box-shadow:0 0 0 2px rgba(139,92,246,.2)}
+.radio-card input:checked+span{background:rgba(214,51,132,.1);border-color:var(--accent2);color:var(--accent2);box-shadow:0 0 0 2px rgba(214,51,132,.15)}
 .form-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
 
 /* Toast */
@@ -131,7 +131,7 @@ tbody tr:hover{background:rgba(139,92,246,.06)}
 .toast-error{background:linear-gradient(135deg,var(--red),#f87171)}
 
 /* Date Setup */
-.date-setup{background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(236,72,153,.05));border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px}
+.date-setup{background:linear-gradient(135deg,rgba(252,228,236,.5),rgba(248,187,208,.3));border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px}
 .date-setup h3{font-size:15px;color:var(--accent2);margin-bottom:12px}
 .date-setup .inline-form{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
 
@@ -147,8 +147,14 @@ tbody tr:hover{background:rgba(139,92,246,.06)}
 /* Scrollbar */
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb{background:rgba(214,51,132,.2);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--accent2)}
+
+/* Sync indicator */
+.sync-status{font-size:12px;padding:3px 10px;border-radius:12px;display:inline-flex;align-items:center;gap:4px}
+.sync-status.syncing{background:rgba(249,168,37,.15);color:#f9a825}
+.sync-status.synced{background:rgba(46,125,50,.1);color:#2e7d32}
+.sync-status.error{background:rgba(198,40,40,.1);color:#c62828}
 
 /* Responsive */
 @media(max-width:768px){
@@ -172,6 +178,7 @@ tbody tr:hover{background:rgba(139,92,246,.06)}
     <span class="badge">AnneLin</span>
   </div>
   <div class="header-right">
+    <span class="sync-status" id="syncStatus" style="display:none"></span>
     <span style="font-size:13px;color:var(--text3)" id="currentDate"></span>
     <span style="font-size:13px;color:var(--accent2);font-weight:600">3/6 獎勵餐</span>
   </div>
@@ -228,6 +235,8 @@ tbody tr:hover{background:rgba(139,92,246,.06)}
       </select>
       <div style="flex:1"></div>
       <button class="btn btn-ghost" onclick="exportCSV()">📥 匯出</button>
+      <button class="btn btn-ghost" onclick="syncAllToSheet()">☁️ 同步雲端</button>
+      <button class="btn btn-ghost" onclick="setSyncUrl()" title="設定 Google Sheets 同步" style="padding:6px 10px">⚙️</button>
       <button class="btn btn-primary" onclick="openModal('add')">➕ 新增訂單</button>
     </div>
 
@@ -505,6 +514,7 @@ function saveOrder(e){
   const remark=document.getElementById('empRemark').value.trim();
   if(!name){showToast('請輸入員工姓名','error');return false}
   const data={name,meal:mealEl?mealEl.value:'',drink:drinkEl?drinkEl.value:'',remark};
+  const isNew = !editingId;
   if(editingId){
     const idx=orders.findIndex(o=>o.id===editingId);
     if(idx>-1){orders[idx]={...orders[idx],...data};showToast('訂單已更新','success')}
@@ -513,6 +523,8 @@ function saveOrder(e){
     showToast('訂單已新增','success');
   }
   saveData();renderOrders();renderStats();closeModal();
+  // Sync to Google Sheets
+  syncToSheet(data, isNew ? 'add' : 'update');
   return false;
 }
 
@@ -577,14 +589,14 @@ function renderStats(){
   document.getElementById('mealStats').innerHTML=Object.entries(mc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
     <div style="margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${k}</span><span style="color:var(--accent2);font-weight:700">${v}</span></div>
-      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:${v/maxM*100}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s"></div></div>
+      <div style="height:6px;background:rgba(214,51,132,.08);border-radius:3px;overflow:hidden"><div style="height:100%;width:${v/maxM*100}%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s"></div></div>
     </div>`).join('');
   const dc={};orders.forEach(o=>{if(o.drink){dc[o.drink]=(dc[o.drink]||0)+1}});
   const maxD=Math.max(...Object.values(dc),1);
   document.getElementById('drinkStats').innerHTML=Object.entries(dc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
     <div style="margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>${k}</span><span style="color:var(--cyan);font-weight:700">${v}</span></div>
-      <div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:${v/maxD*100}%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:3px;transition:width .5s"></div></div>
+      <div style="height:6px;background:rgba(0,131,143,.08);border-radius:3px;overflow:hidden"><div style="height:100%;width:${v/maxD*100}%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:3px;transition:width .5s"></div></div>
     </div>`).join('');
 }
 
@@ -604,7 +616,106 @@ function showToast(msg,type){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
+// ===== Google Sheets Sync =====
+// 使用 Google Apps Script Web App 作為中介
+// 請在 Google 試算表中建立 Apps Script 並部署為 Web App
+const SHEET_ID = '1KM-WVUGhyKDXcqhvfKEdrK9_BOth1Cu-PsPhyn-75d4';
+let APPS_SCRIPT_URL = localStorage.getItem(STORAGE_KEY+'scriptUrl') || '';
+
+function setSyncUrl(){
+  const url = prompt(
+    '請輸入 Google Apps Script Web App 的部署網址：\n\n' +
+    '設定步驟：\n' +
+    '1. 開啟 Google 試算表 → 擴充功能 → Apps Script\n' +
+    '2. 貼上以下程式碼後部署為 Web App\n\n' +
+    '程式碼請見說明文件',
+    APPS_SCRIPT_URL
+  );
+  if(url){
+    APPS_SCRIPT_URL = url.trim();
+    localStorage.setItem(STORAGE_KEY+'scriptUrl', APPS_SCRIPT_URL);
+    showToast('同步網址已設定','success');
+    updateSyncStatus('synced','已連結');
+  }
+}
+
+function updateSyncStatus(state, text){
+  const el = document.getElementById('syncStatus');
+  el.style.display = 'inline-flex';
+  el.className = 'sync-status ' + state;
+  el.textContent = state==='syncing' ? '⏳ '+text : state==='synced' ? '✅ '+text : '❌ '+text;
+  if(state !== 'syncing') setTimeout(()=>{el.style.display='none'},4000);
+}
+
+function syncToSheet(data, action){
+  if(!APPS_SCRIPT_URL){
+    console.log('未設定 Apps Script URL，跳過同步');
+    return;
+  }
+  updateSyncStatus('syncing','同步中...');
+  const payload = {
+    action: action,
+    sheetId: SHEET_ID,
+    row: {
+      name: data.name,
+      meal: data.meal || '',
+      drink: data.drink || '',
+      remark: data.remark || ''
+    }
+  };
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  })
+  .then(()=>{
+    updateSyncStatus('synced','已同步');
+    showToast('已同步至 Google 試算表','success');
+  })
+  .catch(err=>{
+    console.error('Sync error:', err);
+    updateSyncStatus('error','同步失敗');
+    showToast('同步失敗，請檢查網址設定','error');
+  });
+}
+
+// Sync all orders to sheet (full sync)
+function syncAllToSheet(){
+  if(!APPS_SCRIPT_URL){
+    setSyncUrl();
+    if(!APPS_SCRIPT_URL) return;
+  }
+  updateSyncStatus('syncing','全量同步中...');
+  const payload = {
+    action: 'syncAll',
+    sheetId: SHEET_ID,
+    orders: orders.map((o,i) => ({
+      seq: i+1,
+      name: o.name,
+      meal: o.meal || '',
+      drink: o.drink || '',
+      remark: o.remark || ''
+    }))
+  };
+  fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  })
+  .then(()=>{
+    updateSyncStatus('synced','已全量同步');
+    showToast('所有訂單已同步至 Google 試算表','success');
+  })
+  .catch(err=>{
+    console.error('Sync error:', err);
+    updateSyncStatus('error','同步失敗');
+  });
+}
+
 init();
+if(APPS_SCRIPT_URL) updateSyncStatus('synced','已連結');
 </script>
 </body>
 </html>
