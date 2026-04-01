@@ -620,7 +620,7 @@ function showToast(msg,type){
 // 使用 Google Apps Script Web App 作為中介
 // 請在 Google 試算表中建立 Apps Script 並部署為 Web App
 const SHEET_ID = '1KM-WVUGhyKDXcqhvfKEdrK9_BOth1Cu-PsPhyn-75d4';
-let APPS_SCRIPT_URL = localStorage.getItem(STORAGE_KEY+'scriptUrl') || '';
+let APPS_SCRIPT_URL = localStorage.getItem(STORAGE_KEY+'scriptUrl') || 'https://script.google.com/macros/s/AKfycbxtfkfKMMfpa0mk5HzSaJvd54xRj3_wj9VRmNCYkfHfzQkYfHMhtllXKAw4wed-hJpK/exec';
 
 function setSyncUrl(){
   const url = prompt(
